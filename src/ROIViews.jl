@@ -34,9 +34,6 @@ Creates an M+1 dimensional view of an array by stacking regions of interest (ROI
 """
 function ROIView(data::AA, center_pos, ROI_size::NTuple; pad_val=0) where {AA}
     of_starts = Tuple(Tuple(pos .- (ROI_size .÷ 2)) for pos in center_pos)
-    @show typeof(of_starts)
-    #of_end = (ROIsize.-1).÷2
-    #rng = ((range(center_pos[z][d] .- of_start[d],center_pos[z][d] .+ of_end[d],step=1) for z=1:Z) for d=1:M)
     return ROIView{eltype(data), ndims(data)+1, length(ROI_size), length(of_starts)}(data, of_starts, ROI_size, convert(eltype(data),pad_val)) 
 end
 
