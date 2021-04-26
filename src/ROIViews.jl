@@ -34,6 +34,10 @@ Creates an M+1 dimensional view of an array by stacking regions of interest (ROI
 """
 function ROIView(data::AA, center_pos, ROI_size::NTuple; pad_val=0) where {AA}
     of_starts = Tuple(Tuple(pos .- (ROI_size .÷ 2)) for pos in center_pos)
+    #DataDims = ndims(data)
+    #of_starts = Tuple(expand_zeros(s, Val(DataDims)) for s in of_starts)
+    #ROI_size = Tuple(expand_size(ROI_size, size(data)))
+    # return ROIView{eltype(data), ndims(data)+1, length(ROI_size), length(of_starts)}(data, of_starts, ROI_size, convert(eltype(data),pad_val)) 
     return ROIView{eltype(data), ndims(data)+1, length(ROI_size), length(of_starts)}(data, of_starts, ROI_size, convert(eltype(data),pad_val)) 
 end
 
@@ -45,6 +49,10 @@ function expand_size(sz,sz2)
     dims1 = length(sz)
     dims2 = length(sz2)
     ((d<=dims1) ? sz[d] : sz2[d] for d in 1:dims2)
+end
+
+function expand_zeros(t, ::Val{N}) where N  # adds t1 to t2 as a tuple and returns t2[n] for n > length(t1)
+    ntuple(x-> x ≤ length(t) ? t[x] : 0,Val(N))
 end
 
 # define AbstractArray function to allow to treat the generator as an array
@@ -67,10 +75,11 @@ end
 
 # calculate the entry according to the index
 function Base.getindex(A::ROIView{T,N}, I::Vararg{Int, N}) where {T,N}
-    @boundscheck checkbounds(A, I...)
+    # @boundscheck checkbounds(A, I...) # check acces for this view
     ROI_idx = last(I)
     pos = expand_add(A.ROI_offsets[ROI_idx],I[1:end-1]) # Base.front
-    if Base.checkbounds(Bool, A.parent, pos...)
+    # pos = A.ROI_offsets[ROI_idx] .+ I[1:end-1]
+    if Base.checkbounds(Bool, A.parent, pos...) # check acces in original array
         return Base.getindex(A.parent, pos... ) # pos
     else
         return A.pad_val
