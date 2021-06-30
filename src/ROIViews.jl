@@ -75,7 +75,7 @@ end
 
 # calculate the entry according to the index
 function Base.getindex(A::ROIView{T,N}, I::Vararg{Int, N}) where {T,N}
-    # @boundscheck checkbounds(A, I...) # check acces for this view
+    #@boundscheck checkbounds(A, I...) # check acces for this view
     ROI_idx = last(I)
     pos = expand_add(A.ROI_offsets[ROI_idx],I[1:end-1]) # Base.front
     # pos = A.ROI_offsets[ROI_idx] .+ I[1:end-1]
